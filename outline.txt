@@ -1,0 +1,14 @@
+Organizational Hierarchy to help break down the task
+(Taken from class notes)
+
+SurlyDB
+	-Database, represented as a collection of relations (tables)
+		-Relations, a collection of tuples (rows)
+			-Tuples, composed of attributes (columns)
+				-Attributes, data values
+
+	-Schema, descriptor; metadata
+
+Need a class for each level of the hierarchy
+Need a main method to handle input and output
+Parse requests/commands?

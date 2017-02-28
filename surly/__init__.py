@@ -1,3 +1,4 @@
-# from surly.surly import Surly as surly
-from surly.database import Database as dbly
-import surly.parser as parsly
+from surly.surly import Surly
+from surly.database import Database
+from surly.relation import Relation
+import surly.parser as parser

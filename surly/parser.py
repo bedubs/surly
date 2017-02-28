@@ -1,24 +1,59 @@
+import sys
 
 COMMANDS = {'RELATION', 'INSERT', 'PRINT', 'INDEX', 'CATALOG'}
+
+
+def relation_command():
+    print('for relation')
+
+
+def insert_command():
+    print('for insert')
+
+
+def print_command():
+    print('for print')
+
+
+def index_command():
+    print('for index')
+
+
+def catalog_command():
+    print('for catalog')
+
+
+def no_key():
+    print('key not found')
+
+
+def quit_command():
+    print('Exiting system...')
+    sys.exit(0)
+
+
+COMMAND_DICT = {
+    'RELATION': relation_command,
+    'INSERT':   insert_command,
+    'PRINT':    print_command,
+    'INDEX':    index_command,
+    'CATALOG':  catalog_command,
+    'QUIT':     quit_command,
+    'NO_KEY':   no_key
+}
+
 
 # @staticmethod
 def parse(command: str):
     if not command:
         return None
-    return command
+    return COMMAND_DICT.get(command, COMMAND_DICT['NO_KEY'])
 
-def relation(self):
-    print('for a relation')
 
-def insert(self):
-    print('for insert')
-
-def print(self):
-    print('for print')
-
-def index(self):
-    print('for index')
-
-def catalog(self):
-    print('for catalog')
-
+def parse_line(line):
+    line = line.split(" ")
+    # if '/*' in line:
+    #     print('_{}_'.format(line[0]))
+    #     return
+    # print('_{}_'.format(line[0]))
+    return COMMAND_DICT.get(line[0], COMMAND_DICT['NO_KEY'])

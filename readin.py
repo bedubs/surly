@@ -1,9 +1,10 @@
 from surly import Surly
+from surly import read_file
 
 
 def main():
     sur = Surly()
-    sur.read_in('sample_test_file.txt')
+    read_file('test1.txt')
 
     # sur.create_database('test')
     # db = sur.Database('test')

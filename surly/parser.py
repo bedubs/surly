@@ -3,31 +3,31 @@ import sys
 COMMANDS = {'RELATION', 'INSERT', 'PRINT', 'INDEX', 'CATALOG'}
 
 
-def relation_command():
-    print('for relation')
+def relation_command(command_string):
+    print('{}\n'.format(command_string))
 
 
-def insert_command():
+def insert_command(command_string):
     print('for insert')
 
 
-def print_command():
+def print_command(command_string):
     print('for print')
 
 
-def index_command():
+def index_command(command_string):
     print('for index')
 
 
-def catalog_command():
+def catalog_command(command_string):
     print('for catalog')
 
 
-def no_key():
+def no_key(command_string):
     print('key not found')
 
 
-def quit_command():
+def quit_command(command_string):
     print('Exiting system...')
     sys.exit(0)
 
@@ -57,3 +57,14 @@ def parse_line(line):
     #     return
     # print('_{}_'.format(line[0]))
     return COMMAND_DICT.get(line[0], COMMAND_DICT['NO_KEY'])
+
+
+def read_file(file):
+    file = open(file, 'r')
+    line = file.readline()
+    while line:
+        operation = parse_line(line)
+        line_list = line.split(' ')
+        operation(line)
+        line = file.readline()
+    file.close()

@@ -1,12 +1,10 @@
+import time
 from surly.database import Database
 from surly.relation import Relation
-from surly.parser import parse
-from surly.parser import parse_line
-# import sys
-#
+
 # COMMANDS = {'RELATION', 'INSERT', 'PRINT', 'INDEX', 'CATALOG'}
-#
-#
+
+
 # def relation_command():
 #     print('for relation')
 #
@@ -61,26 +59,24 @@ from surly.parser import parse_line
 #     #     return
 #     # print('_{}_'.format(line[0]))
 #     return COMMAND_DICT.get(line[0], COMMAND_DICT['NO_KEY'])
+#
+#
+# def read_file(file):
+#     file = open(file, 'r')
+#     line = file.readline()
+#     while line:
+#         operation = parse_line(line)
+#         operation()
+#         line = file.readline()
+#     file.close()
 
 
 class Surly:
-    def __init__(self):
-        pass
+    def __init__(self, name='surly_db_{}'.format(int(time.time()))):
+        self.db = Database(name)
 
-    def read_in(self, file):
-        file = open(file, 'r')
-        line = file.readline()
-        while line:
-            operation = parse_line(line)
-            operation()
-            line = file.readline()
-        file.close()
+    # def add_database(self, name='surly_db_{}'.format(int(time.time()))):
+    #     db = Database(name)
 
-    def create_database(self, name):
-        db = Database(name)
-
-    def create_relation(self, name):
-        rel = Relation(self, name)
-
-    def parsly(self, command):
-        return parse(command)
+    def add_relation(self, name):
+        rel = Relation(name)

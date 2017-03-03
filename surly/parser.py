@@ -4,23 +4,28 @@ COMMANDS = {'RELATION', 'INSERT', 'PRINT', 'INDEX', 'CATALOG'}
 
 
 def relation_command(command_string):
+    print('for relation')
     print('{}\n'.format(command_string))
 
 
 def insert_command(command_string):
     print('for insert')
+    print('{}\n'.format(command_string))
 
 
 def print_command(command_string):
     print('for print')
+    print('{}\n'.format(command_string))
 
 
 def index_command(command_string):
     print('for index')
+    print('{}\n'.format(command_string))
 
 
 def catalog_command(command_string):
     print('for catalog')
+    print('{}\n'.format(command_string))
 
 
 def no_key(command_string):
@@ -56,15 +61,4 @@ def parse_line(line):
     #     print('_{}_'.format(line[0]))
     #     return
     # print('_{}_'.format(line[0]))
-    return COMMAND_DICT.get(line[0], COMMAND_DICT['NO_KEY'])
-
-
-def read_file(file):
-    file = open(file, 'r')
-    line = file.readline()
-    while line:
-        operation = parse_line(line)
-        line_list = line.split(' ')
-        operation(line)
-        line = file.readline()
-    file.close()
+    return COMMAND_DICT.get(line[0], COMMAND_DICT['NO_KEY']), line[1:]

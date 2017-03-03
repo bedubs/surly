@@ -74,9 +74,14 @@ from surly.relation import Relation
 class Surly:
     def __init__(self, name='surly_db_{}'.format(int(time.time()))):
         self.db = Database(name)
+        self.relation_dict = {}
 
     # def add_database(self, name='surly_db_{}'.format(int(time.time()))):
     #     db = Database(name)
 
-    def add_relation(self, name):
-        rel = Relation(name)
+    def add_relation(self, name, rel):
+        self.relation_dict[name] = rel
+
+    def print_relations(self):
+        for k, v in self.relation_dict.items():
+            print('{}: \n\t{}'.format(k, v))

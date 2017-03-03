@@ -1,10 +1,18 @@
 from surly import Surly
-from surly import read_file
+from surly.parser import parse_line
 
 
 def main():
     sur = Surly()
-    read_file('test1.txt')
+    file = open('test.txt', 'r')
+    line = file.readline()
+    while line:
+        operation, ar = parse_line(line)
+        line_list = line.split(' ')
+        operation(ar)
+        line = file.readline()
+    file.close()
+
 
     # sur.create_database('test')
     # db = sur.Database('test')

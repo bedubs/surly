@@ -7,12 +7,15 @@ def main():
     file = open('test.txt', 'r')
     line = file.readline()
     while line:
-        operation, ar = parse_line(line)
-        line_list = line.split(' ')
-        operation(ar)
+        sur.parse(line)
+        # print(tokenized)
+        # operation, ar = parse_line(line)
+        # line_list = line.split(' ')
+        # operation(ar)
         line = file.readline()
     file.close()
 
+    sur.print_catalog()
 
     # sur.create_database('test')
     # db = sur.Database('test')

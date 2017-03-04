@@ -82,6 +82,14 @@ class Surly:
     def add_relation(self, name, rel):
         self.relation_dict[name] = rel
 
-    def print_relations(self):
-        for k, v in self.relation_dict.items():
+    def print_catalog(self):
+        print('{} database catalog'.format(self.db.name))
+        for k, v in self.db.catalog['RELATION'].items():
             print('{}: \n\t{}'.format(k, v))
+
+    # @staticmethod
+    def parse(self, line):
+        line = line.strip(';\n')
+        line_arr = line.split(' ', 2)
+        self.db.add_to_catalog(line_arr[1], line_arr[2])
+        return self.db.catalog

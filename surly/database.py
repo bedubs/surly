@@ -7,9 +7,13 @@ class Database:
 
     def __init__(self, name):
         self.name = name
+        self.catalog = {'RELATION': {}}
         self.relation_dict = {}
 
-    def create_relation(self, name):
+    def add_to_catalog(self, rel_name, attributes):
+        self.catalog['RELATION'][rel_name] = attributes
+
+    def add_relation(self, name):
         self.relation_dict[name] = Relation(name)
         # self.relation_dict[name] = Relation('{}_{}'.format(self.name, name))
 

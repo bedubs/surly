@@ -5,6 +5,7 @@ COMMANDS = {'RELATION', 'INSERT', 'PRINT', 'INDEX', 'CATALOG'}
 
 def relation_command(command_string):
     print('for relation')
+    print(len(command_string))
     print('{}\n'.format(command_string))
 
 
@@ -23,11 +24,6 @@ def index_command(command_string):
     print('{}\n'.format(command_string))
 
 
-def catalog_command(command_string):
-    print('for catalog')
-    print('{}\n'.format(command_string))
-
-
 def no_key(command_string):
     print('key not found')
 
@@ -42,7 +38,6 @@ COMMAND_DICT = {
     'INSERT':   insert_command,
     'PRINT':    print_command,
     'INDEX':    index_command,
-    'CATALOG':  catalog_command,
     'QUIT':     quit_command,
     'NO_KEY':   no_key
 }

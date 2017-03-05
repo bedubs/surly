@@ -7,12 +7,11 @@ def main():
     file = open('test.txt', 'r')
     line = file.readline()
     while line:
-        command, rel_name, values = tokenizer(line)
-        sur.db.add_to_catalog(rel_name, values)
+        command_string = tokenizer(line)
+        operation = sur.COMMAND_DICT[command_string[0]]
+        operation(command_string[1:])
         line = file.readline()
     file.close()
-
-    sur.print_catalog()
 
     # sur.create_database('test')
     # db = sur.Database('test')

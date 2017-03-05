@@ -1,5 +1,5 @@
 from surly import Surly
-from surly.parser import parse_line
+from surly import tokenizer
 
 
 def main():
@@ -7,12 +7,12 @@ def main():
     file = open('test.txt', 'r')
     line = file.readline()
     while line:
-        operation, ar = parse_line(line)
-        line_list = line.split(' ')
-        operation(ar)
+        command, rel_name, values = tokenizer(line)
+        sur.db.add_to_catalog(rel_name, values)
         line = file.readline()
     file.close()
 
+    sur.print_catalog()
 
     # sur.create_database('test')
     # db = sur.Database('test')

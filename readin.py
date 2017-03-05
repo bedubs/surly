@@ -1,6 +1,5 @@
 from surly import Surly
 from surly import tokenizer
-from surly.parser import parse_line
 
 
 def main():
@@ -10,10 +9,6 @@ def main():
     while line:
         command, rel_name, values = tokenizer(line)
         sur.db.add_to_catalog(rel_name, values)
-        # print(tokenized)
-        # operation, ar = parse_line(line)
-        # line_list = line.split(' ')
-        # operation(ar)
         line = file.readline()
     file.close()
 

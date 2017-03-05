@@ -1,4 +1,5 @@
 import time
+from collections import namedtuple
 from surly.database import Database
 from surly.relation import Relation
 
@@ -70,6 +71,18 @@ from surly.relation import Relation
 #         line = file.readline()
 #     file.close()
 
+def tokenizer(line):
+    line = line.strip(';\n')
+    command, rel_name, attributes = line.split(' ', 2)
+    attributes = attributes.strip('()')
+    attributes = attributes.split(', ')
+    attr_list = []
+    attr = namedtuple('Attribute', ['name', 'type', 'length'])
+    for attribute in attributes:
+        name, type, length = attribute.split(' ')
+        attr_list.append(attr(name, type, length))
+    return command, rel_name, attr_list
+
 
 class Surly:
     def __init__(self, name='surly_db_{}'.format(int(time.time()))):
@@ -90,6 +103,9 @@ class Surly:
     # @staticmethod
     def parse(self, line):
         line = line.strip(';\n')
-        line_arr = line.split(' ', 2)
-        self.db.add_to_catalog(line_arr[1], line_arr[2])
+        command, rel_name, attributes = line.split(' ', 2)
+        attributes = attributes.strip('()')
+
+        # attributes = attributes.lstrip('(')
+        self.db.add_to_catalog(rel_name, attributes)
         return self.db.catalog

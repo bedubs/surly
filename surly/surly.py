@@ -50,6 +50,7 @@ class Surly:
         self.relation_dict[name] = rel
 
     def print_catalog(self):
+        print('\n#############################################')
         print('\n{} Database Catalog'.format(self.db.name))
         for k, v in self.catalog.items():
             print('\n{}: '.format(k))

@@ -13,9 +13,5 @@ def main():
         line = file.readline()
     file.close()
 
-    # sur.create_database('test')
-    # db = sur.Database('test')
-    # db.create_relation('one')
-
 if __name__ == '__main__':
     main()

@@ -1,5 +1,6 @@
 import sys
 import time
+import pandas as pd
 from surly.database import Database
 from surly.relation import Relation
 
@@ -53,8 +54,10 @@ class Surly:
         for k, v in self.catalog.items():
             print('\n{}: '.format(k))
             attrs = v.get_attribute()
-            for i in attrs:
-                print('\t{}\t\t{}\t\t{}'.format(attrs[i].name, attrs[i].type, attrs[i].length))
+            df = pd.DataFrame.from_dict(attrs, orient='index')
+            print(df)
+            # for i in attrs:
+            #     print('\t{}\t\t{}\t\t{}'.format(attrs[i].name, attrs[i].type, attrs[i].length))
 
     def relation_command(self, command_arg):
         rel_name = command_arg[0]

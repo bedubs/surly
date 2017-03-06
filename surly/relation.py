@@ -1,3 +1,4 @@
+import pandas as pd
 from collections import namedtuple
 
 class Relation:
@@ -19,8 +20,9 @@ class Relation:
         self.records.append(record)
 
     def print_records(self):
-        for record in self.records:
-            print(record)
+        print('\nRelation: ' + self.name)
+        df = pd.DataFrame(self.records)
+        print(df)
 
     def __str__(self):
         return self.name

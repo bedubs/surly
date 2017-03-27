@@ -1,5 +1,18 @@
 # Single User Relational Database written in Python 3
 
+### _Note on versioning_
+
+Very loosely following the guidelines of [Semantic Versioning](http://semver.org/) at the most basic level.
+
+* `MAJOR.MINOR.PATCH`
+
+Each iteration of Surly (I and II) are minor versions, eg. `v.0.x.0`.
+
+The final project will be the first major version, `v.1.0.0`.
+
+_Versions will be indicated by tags._
+
+
 ## Surly requires Python 3.6 and Pandas
 
 If you don't already have Python 3.6 installed, I highly recommend using the [Anaconda](https://www.continuum.io/downloads) distribution.

@@ -52,13 +52,16 @@ class Surly:
     def print_catalog(self):
         print('\n#############################################')
         print('\n{} Database Catalog'.format(self.db.name))
+
         for k, v in self.catalog.items():
+            print('---------------')
             print('\n{}: '.format(k))
             attrs = v.get_attribute()
             df = pd.DataFrame.from_dict(attrs, orient='index')
             print(df)
             # for i in attrs:
             #     print('\t{}\t\t{}\t\t{}'.format(attrs[i].name, attrs[i].type, attrs[i].length))
+        print('---------------')
 
     def relation_command(self, command_arg):
         rel_name = command_arg[0]

@@ -2,31 +2,18 @@ import sys
 import time
 import pandas as pd
 from surly.database import Database
-from surly.relation import Relation
 
 
 def tokenizer(line):
     line = line.strip(';\n')
-    # command, rel_name, attributes = line.split(' ', 2)
     return line.split(' ', 2)
-    # attributes = attributes.strip('()')
-    # attributes = attributes.split(', ')
-    # attr_list = []
-    # attr = namedtuple('Attribute', ['name', 'type', 'length'])
-    # for attribute in attributes:
-    #     print(attribute)
-    #     name, type, length = attribute.split(' ', 2)
-    #     attr_list.append(attr(name, type, length))
-    # return command, rel_name, attr_list
 
-def comment_block(command_string):
-    pass
 
-def no_key(command_string):
+def no_key(*args):
     print('key not found')
 
 
-def quit_command(command_string):
+def quit_command(*args):
     print('Exiting system...')
     sys.exit(0)
 
@@ -42,12 +29,8 @@ class Surly:
             'PRINT': self.print_command,
             'INDEX': self.index_command,
             'QUIT': quit_command,
-            'NO_KEY': no_key,
-            '/*': comment_block
+            'NO_KEY': no_key
         }
-
-    def add_relation(self, name, rel):
-        self.relation_dict[name] = rel
 
     def print_catalog(self):
         print('\n#############################################')
@@ -59,20 +42,16 @@ class Surly:
             attrs = v.get_attribute()
             df = pd.DataFrame.from_dict(attrs, orient='index')
             print(df)
-            # for i in attrs:
-            #     print('\t{}\t\t{}\t\t{}'.format(attrs[i].name, attrs[i].type, attrs[i].length))
         print('---------------')
 
     def relation_command(self, command_arg):
         rel_name = command_arg[0]
-        relation = Relation(rel_name)
-        attributes = command_arg[1].strip('()')
-        attributes = attributes.split(', ')
+        self.db.add_relation(rel_name)
+        attributes = command_arg[1].strip('()').split(', ')
         for attribute in attributes:
-            name, type, length = attribute.split(' ', 2)
-            relation.add_attribute(name, type, length)
-        self.add_relation(rel_name, relation)
-        self.db.add_to_catalog(rel_name, relation)
+            name, dtype, length = attribute.split(' ', 2)
+            self.db.relation_dict[rel_name].add_attribute(name, dtype, length)
+        self.db.add_to_catalog(rel_name, self.db.relation_dict[rel_name])
 
     def insert_command(self, command_arg):
         if '\'' in command_arg[1]:
@@ -80,7 +59,7 @@ class Surly:
             arg_list = [e.rstrip(' ').lstrip(' ') for e in arg_list]
         else:
             arg_list = command_arg[1].split(' ')
-        relation = self.catalog[command_arg[0]]
+        relation = self.db.relation_dict[command_arg[0]]
         relation.insert_record(arg_list)
 
     def print_command(self, command_arg):
@@ -88,21 +67,9 @@ class Surly:
         if command == 'CATALOG':
             self.print_catalog()
         else:
-            self.catalog[command.strip(',')].print_records()
+            self.db.catalog['RELATION'][command.strip(',')].print_records()
 
-    def index_command(self, command_string):
+    @staticmethod
+    def index_command(command_string):
         print('for index')
         print('{}\n'.format(command_string))
-
-    @staticmethod
-    def comment_block(command_string):
-        pass
-
-    @staticmethod
-    def no_key(command_string):
-        print('key not found')
-
-    @staticmethod
-    def quit_command(command_string):
-        print('Exiting system...')
-        sys.exit(0)

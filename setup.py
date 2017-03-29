@@ -18,5 +18,5 @@ setup(
 
     author="William Williamson",
     author_email="william.williamson-2@selu.edu",
-    description="Single user relational database"
+    description="Single user relational database", install_requires=['pandas']
 )

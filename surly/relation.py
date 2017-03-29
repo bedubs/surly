@@ -1,6 +1,7 @@
 import pandas as pd
 from surly.attribute import Attribute
 
+
 class Relation:
     def __init__(self, name):
         self.name = name
@@ -8,7 +9,7 @@ class Relation:
         self.records = []
 
     def add_attribute(self, attr_name, attr_type, attr_length):
-        self.attributes[len(self.attributes)] = (Attribute(attr_name, attr_type, attr_length).attr_values)
+        self.attributes[len(self.attributes)] = Attribute(attr_name, attr_type, attr_length).attr_values
 
     def get_attribute(self):
         return self.attributes
@@ -26,5 +27,3 @@ class Relation:
 
     def __str__(self):
         return self.name
-
-

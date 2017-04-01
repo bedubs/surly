@@ -11,11 +11,27 @@ def tokenizer(line):
 
 def no_key(*args):
     print('key not found')
+    print(args)
 
 
 def quit_command(*args):
     print('Exiting system...')
     sys.exit(0)
+
+
+def destroy_command(*args):
+    print('Destroying stuff')
+    print(args)
+
+
+def delete_command(*args):
+    print('Deleting stuff')
+    print(args)
+
+
+def project_command(*args):
+    print('Projecting stuff')
+    print(args)
 
 
 class Surly:
@@ -28,6 +44,9 @@ class Surly:
             'INSERT': self.insert_command,
             'PRINT': self.print_command,
             'INDEX': self.index_command,
+            'DESTROY': destroy_command,
+            'DELETE': delete_command,
+            'PROJECT': project_command,
             'QUIT': quit_command,
             'NO_KEY': no_key
         }

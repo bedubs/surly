@@ -3,9 +3,9 @@ from surly import tokenizer
 import re
 
 
-def main():
+def read_file(file):
     sur = Surly()
-    file = open('test.txt', 'r')
+    file = open(file, 'r')
     line = file.readline()
     while line:
         if re.search('^\/\*', line):
@@ -17,6 +17,12 @@ def main():
             operation(command_string[1:])
         line = file.readline()
     file.close()
+    return sur
+
+def main():
+    path = './data/pizzeria_data.txt'
+    read_file(path)
+
 
 if __name__ == '__main__':
     main()

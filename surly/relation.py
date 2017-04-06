@@ -25,13 +25,13 @@ class Relation:
 
     def print_records(self):
         print('\nRelation: ' + self.name)
-        column = [item for item in self.attributes]
-        df = pd.DataFrame.from_dict(self.records, orient="index")
-        # df = df.set_index('id')
+        if self.records:
+            df = pd.DataFrame.from_dict(self.records, orient="index")
+        else:
+            column = [v.name for k, v in self.attributes.items()]
+            df = pd.DataFrame(self.records, columns=column)
+            df = df.set_index('Id')
         print(df)
-
-    def project_columns(self, *args):
-        pass
 
     def delete(self):
         self.records.clear()

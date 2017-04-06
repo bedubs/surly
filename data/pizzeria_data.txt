@@ -3,7 +3,6 @@ RELATION Customer (Id num 4, Fname char 15, Lname char 15, Address char 30, Phon
 RELATION Pizza (Id num 4, Toppings char 100);
 RELATION Order (Id num 4, Cust_Id num 4, Order_date datetime  10, Pizza_Id num 4, Base_price num 5, Cost num 5);
 RELATION Topping (Id num 4, Topping char 20, Price num 4);
-PRINT CATALOG;
 /* insert Customer (Id, Fname, Lname, Address, Phone) */
 INSERT Customer 1000 John Smith '731 Fondren, Houston TX' 9857651234;
 INSERT Customer 1001 Franklin Wong '638 Voss, Houston TX' 9855552234;
@@ -38,3 +37,10 @@ PRINT Customer;
 PRINT Pizza;
 PRINT Order;
 PRINT Topping;
+PROJECT Fname, Lname, Address FROM Customer;
+PROJECT Topping, Price FROM Topping;
+PRINT CATALOG;
+DELETE Order;
+PRINT Order;
+DESTROY Order;
+PRINT CATALOG;

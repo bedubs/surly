@@ -16,8 +16,17 @@ class Database:
     def add_relation(self, name):
         self.relation_dict[name] = Relation(name)
 
-    def find_relation_by_name(self, name):
-        self.relation_dict.get(name)
+    def find_relation_by_name(self, relname):
+        return self.relation_dict[relname]
+
+    def delete_relation(self, relname):
+        rel = self.find_relation_by_name(relname)
+        rel.delete()
+
+    def destroy_relation(self, relname):
+        rel = self.find_relation_by_name(relname)
+        rel.destroy()
+        return self.relation_dict.pop(relname)
 
     def print_database(self):
         print(self.name)

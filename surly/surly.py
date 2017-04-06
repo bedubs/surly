@@ -2,19 +2,55 @@ import sys
 import time
 import pandas as pd
 from surly.database import Database
+import re
 
 
 def tokenizer(line):
     line = line.strip(';\n')
-    return line.split(' ', 2)
+
+    if re.search('^RELATION', line, re.IGNORECASE):
+        command, relname, com_args = line.split(' ', 2)
+        com_args = com_args.strip('()')
+        return command.upper(), (relname, com_args)
+
+    if re.search('^INSERT', line, re.IGNORECASE):
+        command, relname, com_args = line.split(' ', 2)
+        squo = "'"
+        if squo in com_args:
+            arg_list = com_args[0:com_args.find(squo)].split()
+            arg_list.append(com_args[com_args.find(squo) + 1:com_args.rfind(squo)])
+            arg_list.append(com_args[com_args.rfind(squo) + 1:])
+            arg_list = [e.rstrip(' ').lstrip(' ') for e in arg_list]
+            arg_list[:] = [item for item in arg_list if item != '']
+        else:
+            arg_list = com_args.split(' ')
+        return command.upper(), (relname, arg_list)
+
+    if re.search('^INDEX', line, re.IGNORECASE):
+        print(line)
+
+    if re.search('^(DELETE|DESTROY|PRINT)', line, re.IGNORECASE):
+        command, relname = line.split()
+        return command.upper(), relname
+
+    if re.search('^PROJECT', line, re.IGNORECASE):
+        command, args = line.split(' ', 1)
+        attr, relname = args.split(' FROM ', 1)
+        attr = attr.split(', ')
+        return command.upper(), (relname, attr)
+
+    if re.search('^(QUIT|EXIT)', line, re.IGNORECASE):
+        return 'QUIT', 'Exiting system...'
+
+    return 'NO_KEY', 'Unknown command "{}".'.format(line)
 
 
-def no_key(*args):
-    print('key not found')
+def no_key(args):
+    print(args)
 
 
-def quit_command(*args):
-    print('Exiting system...')
+def quit_command(args):
+    print(args)
     sys.exit(0)
 
 
@@ -28,6 +64,9 @@ class Surly:
             'INSERT': self.insert_command,
             'PRINT': self.print_command,
             'INDEX': self.index_command,
+            'DESTROY': self.destroy_command,
+            'DELETE': self.delete_command,
+            'PROJECT': self.project_command,
             'QUIT': quit_command,
             'NO_KEY': no_key
         }
@@ -44,30 +83,44 @@ class Surly:
             print(df)
         print('---------------')
 
-    def relation_command(self, command_arg):
-        rel_name = command_arg[0]
-        self.db.add_relation(rel_name)
-        attributes = command_arg[1].strip('()').split(', ')
-        for attribute in attributes:
+    def relation_command(self, args):
+        relname = args[0]
+        self.db.add_relation(relname)
+        for attribute in args[1].split(', '):
             name, dtype, length = attribute.split(' ', 2)
-            self.db.relation_dict[rel_name].add_attribute(name, dtype, length)
-        self.db.add_to_catalog(rel_name, self.db.relation_dict[rel_name])
+            self.db.relation_dict[relname].add_attribute(name, dtype, length)
+        self.db.add_to_catalog(relname, self.db.relation_dict[relname])
 
-    def insert_command(self, command_arg):
-        if '\'' in command_arg[1]:
-            arg_list = command_arg[1].split('\'')
-            arg_list = [e.rstrip(' ').lstrip(' ') for e in arg_list]
-        else:
-            arg_list = command_arg[1].split(' ')
-        relation = self.db.relation_dict[command_arg[0]]
-        relation.insert_record(arg_list)
+    def insert_command(self, args):
+        relation = self.db.relation_dict[args[0]]
+        relation.insert_record(args[1])
 
-    def print_command(self, command_arg):
-        command = command_arg[0]
-        if command == 'CATALOG':
+    def destroy_command(self, relname):
+        self.db.destroy_relation(relname)
+        self.catalog.pop(relname)
+
+    def delete_command(self, relname):
+        self.db.delete_relation(relname)
+
+    def project_command(self, args):
+        relation = self.db.find_relation_by_name(args[0])
+        tempRel = self.db.add_relation('temp_rel')
+        attrs = {}
+        for attr in args[1]:
+            attrs[attr] = []
+            for k, v in relation.records.items():
+                attrs[attr].append(v[attr])
+
+        df = pd.DataFrame(attrs, columns=args[1])
+        print('\n\n{0}: {1}\n'.format(args[0], args[1]))
+        print(df)
+
+
+    def print_command(self, arg):
+        if arg == 'CATALOG':
             self.print_catalog()
         else:
-            self.db.catalog['RELATION'][command.strip(',')].print_records()
+            self.db.catalog['RELATION'][arg].print_records()
 
     @staticmethod
     def index_command(command_string):

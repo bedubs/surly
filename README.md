@@ -1,3 +1,25 @@
+## _SURLY 3 Requirements_
+
+_Build upon SURLY 2 and implement the SURLY commands below (see SURLY spec).  The WHERE clause of DELETE and SELECT should handle multiple conditions.
+
+DELETE WHERE
+SELECT
+JOIN
+Use the implemented commands to build 5 interesting queries that involve 2 or more relations. Continue working in teams of 2 using the data model you designed earlier in the semester. Program functionality must be demonstrated to the instructor before the due date. Deliverables to be submitted include:
+
+source code (submit build and share Git repository on CsGit)
+a hard-copy and digital report (in this format)
+test input file (including the above queries) and corresponding output
+Example Commands:
+
+DELETE PREREQ WHERE CNUM1 = CS2510 or CNUM1 = CS3510 and CNUM2 != CS1510;
+SELECT COURSE WHERE CNUM = CS2510 and CREDITS > 3;
+T1 = SELECT COURSE WHERE CNUM = CS2510;
+PRINT T1;
+J = JOIN COURSE, PREREQ ON CNUM = CNUM2;
+S = SELECT J WHERE CNUM = CS2510;
+PRINT S;_
+
 # Single User Relational Database written in Python 3
 
 ### _Note on versioning_

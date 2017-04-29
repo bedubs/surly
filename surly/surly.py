@@ -67,6 +67,8 @@ class Surly:
             'DESTROY': self.destroy_command,
             'DELETE': self.delete_command,
             'PROJECT': self.project_command,
+            'SELECT': self.select_command,
+            'JOIN': self.join_command,
             'QUIT': quit_command,
             'NO_KEY': no_key
         }
@@ -100,6 +102,7 @@ class Surly:
         self.catalog.pop(relname)
 
     def delete_command(self, relname):
+        # TODO add where condition
         self.db.delete_relation(relname)
 
     def project_command(self, args):
@@ -115,6 +118,13 @@ class Surly:
         print('\n\n{0}: {1}\n'.format(args[0], args[1]))
         print(df)
 
+    def select_command(self):
+        # TODO implement select command
+        pass
+
+    def join_command(self):
+    #     TODO implement join command
+        pass
 
     def print_command(self, arg):
         if arg == 'CATALOG':

@@ -12,8 +12,18 @@ def read_file(file):
             while not re.search('\*\/$', line):
                 line = file.readline()
         else:
+            new_rel = None
+
+            if line.split(' ')[1] is '=':
+                new_rel, line = line.split(' = ', 1)
+
             command, args = tokenizer(line)
             operation = sur.COMMAND_DICT.get(command, sur.COMMAND_DICT['NO_KEY'])
+
+            if new_rel:
+                args = list(args)
+                args.append(new_rel)
+
             operation(args)
         line = file.readline()
     file.close()

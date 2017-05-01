@@ -2,6 +2,7 @@ import sys
 import time
 import pandas as pd
 from surly.database import Database
+from surly.relation import Relation
 import re
 
 
@@ -39,6 +40,12 @@ def tokenizer(line):
         attr = attr.split(', ')
         return command.upper(), (relname, attr)
 
+    if re.search('^SELECT', line, re.IGNORECASE):
+        command, args = line.split(' ', 1)
+        relname, attr = args.split(' WHERE ', 1)
+        attr = attr.split(' = ')
+        return command.upper(), (relname, attr)
+
     if re.search('^(QUIT|EXIT)', line, re.IGNORECASE):
         return 'QUIT', 'Exiting system...'
 
@@ -59,6 +66,7 @@ class Surly:
         self.db = Database(name)
         self.catalog = self.db.catalog['RELATION']
         self.relation_dict = {}
+        self.temp_relation = {}
         self.COMMAND_DICT = {
             'RELATION': self.relation_command,
             'INSERT': self.insert_command,
@@ -107,7 +115,7 @@ class Surly:
 
     def project_command(self, args):
         relation = self.db.find_relation_by_name(args[0])
-        tempRel = self.db.add_relation('temp_rel')
+        temp_rel = self.db.add_relation('temp_rel')
         attrs = {}
         for attr in args[1]:
             attrs[attr] = []
@@ -118,9 +126,18 @@ class Surly:
         print('\n\n{0}: {1}\n'.format(args[0], args[1]))
         print(df)
 
-    def select_command(self):
+    def select_command(self, args):
         # TODO implement select command
-        pass
+        print(args)
+        temp_rel = Relation(args.pop())
+        relation = self.db.find_relation_by_name(args.pop(0))
+        conditions = args.pop()
+        self.temp_relation[temp_rel.name] = temp_rel
+        for k, w in relation.records.items():
+            if w[conditions[0]] == conditions[1]:
+                self.temp_relation[temp_rel.name] = {k: w}
+                print('{}: {}'.format(k, w))
+        print(relation)
 
     def join_command(self):
     #     TODO implement join command

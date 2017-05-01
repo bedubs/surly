@@ -44,3 +44,4 @@ DELETE Order;
 PRINT Order;
 DESTROY Order;
 PRINT CATALOG;
+t1 = SELECT Customer WHERE Lname = Wong;

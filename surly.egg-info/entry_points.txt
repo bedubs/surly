@@ -1,12 +1,13 @@
 [console_scripts]
-delete = surly.commands:delete_command
-destroy = surly.commands:destroy_command
-insert = surly.commands:insert_command
-join = surly.commands:join_command
-print = surly.commands:print_command
-project = surly.commands:project_command
-quit = surly.commands:quit_command
-relation = surly.commands:relation_command
-select = surly.commands:select_command
+DELETE = surly.commands:delete
+DESTROY = surly.commands:destroy
+INSERT = surly.commands:insert
+JOIN = surly.commands:join
+PRINT = surly.commands:print
+PROJECT = surly.commands:project
+QUIT = surly.commands:quit
+READ = surly.commands:read
+RELATION = surly.commands:relation
+SELECT = surly.commands:select
 surly-cli = surly.commands:cli
 

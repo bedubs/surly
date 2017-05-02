@@ -18,12 +18,14 @@ def read_file(file):
                 new_rel, line = line.split(' = ', 1)
 
             command, args = tokenizer(line)
+            # print(args)
             operation = sur.COMMAND_DICT.get(command, sur.COMMAND_DICT['NO_KEY'])
 
             if new_rel:
                 args = list(args)
                 args.append(new_rel)
 
+            # print(operation)
             operation(args)
         line = file.readline()
     file.close()

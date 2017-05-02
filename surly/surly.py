@@ -1,9 +1,11 @@
 import sys
+import os
 import time
+import re
+import shelve
 import pandas as pd
 from surly.database import Database
 from surly.relation import Relation
-import re
 
 
 def tokenizer(line):
@@ -27,24 +29,30 @@ def tokenizer(line):
             arg_list = com_args.split(' ')
         return command.upper(), (relname, arg_list)
 
-    if re.search('^INDEX', line, re.IGNORECASE):
-        print(line)
-
-    if re.search('^(DELETE|DESTROY|PRINT)', line, re.IGNORECASE):
-        command, relname = line.split()
-        return command.upper(), relname
-
-    if re.search('^PROJECT', line, re.IGNORECASE):
-        command, args = line.split(' ', 1)
-        attr, relname = args.split(' FROM ', 1)
-        attr = attr.split(', ')
-        return command.upper(), (relname, attr)
-
-    if re.search('^SELECT', line, re.IGNORECASE):
-        command, args = line.split(' ', 1)
-        relname, attr = args.split(' WHERE ', 1)
-        attr = attr.split(' = ')
-        return command.upper(), (relname, attr)
+    # if re.search('^INDEX', line, re.IGNORECASE):
+    #     print(line)
+    #
+    # if re.search('^(DELETE|DESTROY)', line, re.IGNORECASE):
+    #     command, relname = line.split()
+    #     print(relname)
+    #     return command.upper(), relname
+    #
+    # if re.search('^(PRINT)', line, re.IGNORECASE):
+    #     command, relname = line.split()
+    #     # cmd.print((relname,))
+    #     return command.upper(), (relname)
+    #
+    # if re.search('^PROJECT', line, re.IGNORECASE):
+    #     command, args = line.split(' ', 1)
+    #     attr, relname = args.split(' FROM ', 1)
+    #     attr = attr.split(', ')
+    #     return command.upper(), (relname, attr)
+    #
+    # if re.search('^SELECT', line, re.IGNORECASE):
+    #     command, args = line.split(' ', 1)
+    #     relname, attr = args.split(' WHERE ', 1)
+    #     attr = attr.split(' = ')
+    #     return command.upper(), (relname, attr)
 
     if re.search('^(QUIT|EXIT)', line, re.IGNORECASE):
         return 'QUIT', 'Exiting system...'
@@ -61,12 +69,25 @@ def quit_command(args):
     sys.exit(0)
 
 
+def open_shelve(file_path, *args, **kwargs):
+    with shelve.open(file_path) as s:
+        s[kwargs['key']] = kwargs['value']
+    s.close()
+
+
 class Surly:
-    def __init__(self, name='surly_db_{}'.format(int(time.time()))):
+    def __init__(self, name='surly_db'):
+        data_path = 'data'
+        self.db_shelve = os.path.join(data_path, name + '.db')
+        self.catalog_shelve = os.path.join(data_path, name + '_catalog.db')
+        self.relation_shelve = os.path.join(data_path, name + '_relation.db')
+        open_shelve(self.db_shelve, key='CATALOG', value=self.catalog_shelve)
+        open_shelve(self.db_shelve, key='RELATION', value=self.relation_shelve)
         self.db = Database(name)
         self.catalog = self.db.catalog['RELATION']
         self.relation_dict = {}
         self.temp_relation = {}
+        self.catalog_store = os.path.join(data_path, name + '.db')
         self.COMMAND_DICT = {
             'RELATION': self.relation_command,
             'INSERT': self.insert_command,
@@ -95,13 +116,15 @@ class Surly:
 
     def relation_command(self, args):
         relname = args[0]
-        self.db.add_relation(relname)
+        self.db.add_relation((relname,))
         for attribute in args[1].split(', '):
             name, dtype, length = attribute.split(' ', 2)
             self.db.relation_dict[relname].add_attribute(name, dtype, length)
         self.db.add_to_catalog(relname, self.db.relation_dict[relname])
+        self.print_catalog()
 
     def insert_command(self, args):
+        print(args)
         relation = self.db.relation_dict[args[0]]
         relation.insert_record(args[1])
 
@@ -140,14 +163,16 @@ class Surly:
         print(relation)
 
     def join_command(self):
-    #     TODO implement join command
+        # TODO implement join command
         pass
 
-    def print_command(self, arg):
-        if arg == 'CATALOG':
-            self.print_catalog()
-        else:
-            self.db.catalog['RELATION'][arg].print_records()
+    def print_command(self, args):
+        print(args)
+        for arg in args:
+            if arg == 'CATALOG':
+                self.print_catalog()
+            else:
+                self.db.catalog['RELATION'][arg].print_records()
 
     @staticmethod
     def index_command(command_string):

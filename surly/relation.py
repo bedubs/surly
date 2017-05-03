@@ -9,7 +9,7 @@ class Relation:
         self.records = {}
 
     def add_attribute(self, attr_name, attr_type, attr_length):
-        self.attributes[len(self.attributes)] = Attribute(attr_name, attr_type, attr_length).attr_values
+        self.attributes[len(self.attributes)] = Attribute(attr_name, attr_type, attr_length) #.attr_values
 
     def get_attribute(self):
         return self.attributes

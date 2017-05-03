@@ -28,6 +28,7 @@ def relation(relation_name, attribute_definitions):
     click.echo('Relation Name: {}\nAttribute Definitions: {}'.format(relation_name, attribute_definitions))
     attr_defs = attribute_definitions.strip('()')
     click.echo(attr_defs.split(', '))
+    sur.relation_command([relation_name, attr_defs])
 
 
 @cli.command()
@@ -36,7 +37,8 @@ def relation(relation_name, attribute_definitions):
 def insert(relation_name, attribute_definitions):
     """Insert Values into a Relation"""
     click.echo('insert_command')
-    click.echo('Relation Name: {}\nAttribute Definitions: {}'.format(relation_name, attribute_definitions))
+    sur.insert_command([relation_name, attribute_definitions])
+    # click.echo('Relation Name: {}\nAttribute Definitions: {}'.format(relation_name, attribute_definitions))
 
 
 @cli.command()
@@ -50,13 +52,15 @@ def select(relation_name, where):
 
 
 @cli.command()
+@click.option('--temp', help='FROM=Name of temp relation.', nargs=1)
 @click.option('--f', help='FROM=Name of relation to project from.', nargs=1)
 @click.argument('attributes', nargs=-1)
-def project(f, attributes):
+def project(f, temp, attributes):
     """Project from a Relation"""
-    click.echo('Attributes: {}'.format(attributes))
-    click.echo('FROM: {}'.format(f))
-    click.echo('project_command')
+    # click.echo('Attributes: {}'.format(attributes))
+    # click.echo('FROM: {}'.format(f))
+    # click.echo('project_command')
+    sur.project_command(attributes, relname=f, temp=temp)
 
 
 @cli.command()
@@ -72,8 +76,11 @@ def print(name):
 
 
 @cli.command()
-def delete():
+@click.argument('name')
+@click.option('--where', '-w')
+def delete(name, where):
     click.echo('delete_command')
+    sur.delete_command(name, condition=where)
 
 
 @cli.command()

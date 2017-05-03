@@ -1,6 +1,5 @@
 import sys
 import os
-import time
 import re
 import shelve
 import pandas as pd
@@ -37,10 +36,10 @@ def tokenizer(line):
     #     print(relname)
     #     return command.upper(), relname
     #
-    # if re.search('^(PRINT)', line, re.IGNORECASE):
-    #     command, relname = line.split()
-    #     # cmd.print((relname,))
-    #     return command.upper(), (relname)
+    if re.search('^(PRINT)', line, re.IGNORECASE):
+        command, relname = line.split()
+        # cmd.print((relname,))
+        return command.upper(), (relname)
     #
     # if re.search('^PROJECT', line, re.IGNORECASE):
     #     command, args = line.split(' ', 1)
@@ -106,47 +105,57 @@ class Surly:
         print('\n#############################################')
         print('\n{} Database Catalog'.format(self.db.name))
 
-        for k, v in self.catalog.items():
+        s = shelve.open(self.catalog_shelve, protocol=2, writeback=True)
+        for k, v in s.items():
             print('---------------')
             print('\n{}: '.format(k))
             attrs = v.get_attribute()
             df = pd.DataFrame.from_dict(attrs, orient='index')
             print(df)
         print('---------------')
+        s.close()
 
     def relation_command(self, args):
         relname = args[0]
-        self.db.add_relation((relname,))
+        print('Creating {}'.format(relname))
+        self.db.add_relation(relname)
+        s = shelve.open(self.relation_shelve, protocol=2, writeback=True)
         for attribute in args[1].split(', '):
             name, dtype, length = attribute.split(' ', 2)
-            self.db.relation_dict[relname].add_attribute(name, dtype, length)
-        self.db.add_to_catalog(relname, self.db.relation_dict[relname])
-        self.print_catalog()
+            s[relname].add_attribute(name, dtype, length)
+            # self.db.relation_dict[relname].add_attribute(name, dtype, length)
+        self.db.add_to_catalog(relname, s[relname]) # self.db.relation_dict[relname])
+        s.close()
 
     def insert_command(self, args):
         print(args)
-        relation = self.db.relation_dict[args[0]]
+        s = shelve.open(self.relation_shelve, protocol=2, writeback=True)
+        relation = s[args[0]] #self.db.relation_dict[args[0]]
         relation.insert_record(args[1])
+        s.close()
 
     def destroy_command(self, relname):
         self.db.destroy_relation(relname)
         self.catalog.pop(relname)
 
-    def delete_command(self, relname):
+    def delete_command(self, relname, condition=None):
         # TODO add where condition
-        self.db.delete_relation(relname)
+        if condition is None:
+            self.db.delete_relation(relname)
 
-    def project_command(self, args):
-        relation = self.db.find_relation_by_name(args[0])
+    def project_command(self, args, relname, temp):
+        s = shelve.open(self.relation_shelve, protocol=2, writeback=True)
+        relation = s[relname] # self.db.find_relation_by_name(args[0])
         temp_rel = self.db.add_relation('temp_rel')
         attrs = {}
-        for attr in args[1]:
+        for attr in args:
             attrs[attr] = []
             for k, v in relation.records.items():
                 attrs[attr].append(v[attr])
+        s.close()
 
-        df = pd.DataFrame(attrs, columns=args[1])
-        print('\n\n{0}: {1}\n'.format(args[0], args[1]))
+        df = pd.DataFrame(attrs, columns=args)
+        print('\n\n{0}: {1}\n'.format(relname, args))
         print(df)
 
     def select_command(self, args):
@@ -166,13 +175,22 @@ class Surly:
         # TODO implement join command
         pass
 
+    # def print_command(self, arg):
+    #     if arg == 'CATALOG':
+    #         self.print_catalog()
+    #     else:
+    #         self.db.catalog['RELATION'][arg].print_records()
+
+
     def print_command(self, args):
         print(args)
         for arg in args:
             if arg == 'CATALOG':
                 self.print_catalog()
             else:
-                self.db.catalog['RELATION'][arg].print_records()
+                s = shelve.open(self.relation_shelve, protocol=2, writeback=True)
+                s[arg].print_records()
+                s.close()
 
     @staticmethod
     def index_command(command_string):

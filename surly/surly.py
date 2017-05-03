@@ -130,7 +130,7 @@ class Surly:
     def insert_command(self, args):
         print(args)
         s = shelve.open(self.relation_shelve, protocol=2, writeback=True)
-        relation = s[args[0]] #self.db.relation_dict[args[0]]
+        relation = s[args[0]]
         relation.insert_record(args[1])
         s.close()
 
@@ -146,7 +146,7 @@ class Surly:
     def project_command(self, args, relname, temp):
         s = shelve.open(self.relation_shelve, protocol=2, writeback=True)
         relation = s[relname] # self.db.find_relation_by_name(args[0])
-        temp_rel = self.db.add_relation('temp_rel')
+        temp_rel = self.db.add_relation(temp)
         attrs = {}
         for attr in args:
             attrs[attr] = []
@@ -158,7 +158,7 @@ class Surly:
         print('\n\n{0}: {1}\n'.format(relname, args))
         print(df)
 
-    def select_command(self, args):
+    def select_command(self, relname, args):
         # TODO implement select command
         print(args)
         temp_rel = Relation(args.pop())
@@ -171,8 +171,19 @@ class Surly:
                 print('{}: {}'.format(k, w))
         print(relation)
 
-    def join_command(self):
+    def join_command(self, rel_a, rel_b, args, temp='temp'):
         # TODO implement join command
+        self.db.add_relation(temp)
+        s = shelve.open(self.relation_shelve, protocol=2, writeback=True)
+        ra = s[rel_a]
+        rb = s[rel_b]
+
+        if args:
+            args_list = args.split(' = ')
+            print(args_list)
+            print(ra.get_attribute())
+            print(rb.get_attribute())
+        s.close()
         pass
 
     # def print_command(self, arg):

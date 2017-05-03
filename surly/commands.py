@@ -25,9 +25,9 @@ sur = Surly()
 @click.argument('attribute_definitions', nargs=1)
 def relation(relation_name, attribute_definitions):
     """Create a Relation"""
-    click.echo('Relation Name: {}\nAttribute Definitions: {}'.format(relation_name, attribute_definitions))
+    # click.echo('Relation Name: {}\nAttribute Definitions: {}'.format(relation_name, attribute_definitions))
     attr_defs = attribute_definitions.strip('()')
-    click.echo(attr_defs.split(', '))
+    # click.echo(attr_defs.split(', '))
     sur.relation_command([relation_name, attr_defs])
 
 
@@ -49,6 +49,7 @@ def select(relation_name, where):
     click.echo('Relation: {}'.format(relation_name))
     click.echo('WHERE: {}'.format(where))
     click.echo('select_command')
+    # sur.select_command(relation_name, where)
 
 
 @cli.command()
@@ -57,14 +58,17 @@ def select(relation_name, where):
 @click.argument('attributes', nargs=-1)
 def project(f, temp, attributes):
     """Project from a Relation"""
-    # click.echo('Attributes: {}'.format(attributes))
-    # click.echo('FROM: {}'.format(f))
-    # click.echo('project_command')
     sur.project_command(attributes, relname=f, temp=temp)
 
 
 @cli.command()
-def join():
+@click.argument('relation_a', nargs=1)
+@click.argument('relation_b', nargs=1)
+@click.option('--temp', '-t', help='FROM=Name of temp relation.', nargs=1)
+@click.option('--where', '-w', help='WHERE=select condition.', nargs=1)
+def join(relation_a, relation_b, temp, where):
+    """Join two relations based on condition"""
+    sur.join_command(relation_a, relation_b, where, temp=temp)
     click.echo('join_command')
 
 
@@ -79,12 +83,15 @@ def print(name):
 @click.argument('name')
 @click.option('--where', '-w')
 def delete(name, where):
-    click.echo('delete_command')
+    # click.echo('delete_command')
     sur.delete_command(name, condition=where)
 
 
 @cli.command()
-def destroy():
+@click.argument('name')
+def destroy(name):
+    """Destroy a relation completely."""
+    sur.destroy_command(name)
     click.echo('destroy_command')
 
 

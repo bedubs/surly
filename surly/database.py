@@ -24,19 +24,16 @@ class Database:
         s = shelve.open(self.catalog_shelve, protocol=2, writeback=True)
         s[rel_name] = attributes
         s.close()
-        # self.catalog['RELATION'][rel_name] = attributes
 
     def add_relation(self, name):
         open_shelve(self.relation_shelve, key=name, value=Relation(name))
-        # self.relation_dict[name] = Relation(name)
 
     def find_relation_by_name(self, relname):
         return self.relation_dict[relname]
 
     def delete_relation(self, relname):
         with shelve.open(self.relation_shelve, protocol=2, writeback=True) as s:
-            del s[relname] # = self.find_relation_by_name(relname)
-        #rel.delete()
+            del s[relname]
 
     def destroy_relation(self, relname):
         rel = self.find_relation_by_name(relname)

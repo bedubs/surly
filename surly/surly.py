@@ -1,66 +1,9 @@
 import sys
 import os
-import re
 import shelve
 import pandas as pd
 from surly.database import Database
 from surly.relation import Relation
-
-
-def tokenizer(line):
-    line = line.strip(';\n')
-
-    if re.search('^RELATION', line, re.IGNORECASE):
-        command, relname, com_args = line.split(' ', 2)
-        com_args = com_args.strip('()')
-        return command.upper(), (relname, com_args)
-
-    if re.search('^INSERT', line, re.IGNORECASE):
-        command, relname, com_args = line.split(' ', 2)
-        squo = "'"
-        if squo in com_args:
-            arg_list = com_args[0:com_args.find(squo)].split()
-            arg_list.append(com_args[com_args.find(squo) + 1:com_args.rfind(squo)])
-            arg_list.append(com_args[com_args.rfind(squo) + 1:])
-            arg_list = [e.rstrip(' ').lstrip(' ') for e in arg_list]
-            arg_list[:] = [item for item in arg_list if item != '']
-        else:
-            arg_list = com_args.split(' ')
-        return command.upper(), (relname, arg_list)
-
-    # if re.search('^INDEX', line, re.IGNORECASE):
-    #     print(line)
-    #
-    # if re.search('^(DELETE|DESTROY)', line, re.IGNORECASE):
-    #     command, relname = line.split()
-    #     print(relname)
-    #     return command.upper(), relname
-    #
-    if re.search('^(PRINT)', line, re.IGNORECASE):
-        command, relname = line.split()
-        # cmd.print((relname,))
-        return command.upper(), (relname)
-    #
-    # if re.search('^PROJECT', line, re.IGNORECASE):
-    #     command, args = line.split(' ', 1)
-    #     attr, relname = args.split(' FROM ', 1)
-    #     attr = attr.split(', ')
-    #     return command.upper(), (relname, attr)
-    #
-    # if re.search('^SELECT', line, re.IGNORECASE):
-    #     command, args = line.split(' ', 1)
-    #     relname, attr = args.split(' WHERE ', 1)
-    #     attr = attr.split(' = ')
-    #     return command.upper(), (relname, attr)
-
-    if re.search('^(QUIT|EXIT)', line, re.IGNORECASE):
-        return 'QUIT', 'Exiting system...'
-
-    return 'NO_KEY', 'Unknown command "{}".'.format(line)
-
-
-def no_key(args):
-    print(args)
 
 
 def quit_command(args):
@@ -68,7 +11,7 @@ def quit_command(args):
     sys.exit(0)
 
 
-def open_shelve(file_path, *args, **kwargs):
+def open_shelve(file_path, **kwargs):
     with shelve.open(file_path) as s:
         s[kwargs['key']] = kwargs['value']
     s.close()
@@ -80,55 +23,40 @@ class Surly:
         self.db_shelve = os.path.join(data_path, name + '.db')
         self.catalog_shelve = os.path.join(data_path, name + '_catalog.db')
         self.relation_shelve = os.path.join(data_path, name + '_relation.db')
-        open_shelve(self.db_shelve, key='CATALOG', value=self.catalog_shelve)
-        open_shelve(self.db_shelve, key='RELATION', value=self.relation_shelve)
         self.db = Database(name)
         self.catalog = self.db.catalog['RELATION']
         self.relation_dict = {}
         self.temp_relation = {}
         self.catalog_store = os.path.join(data_path, name + '.db')
-        self.COMMAND_DICT = {
-            'RELATION': self.relation_command,
-            'INSERT': self.insert_command,
-            'PRINT': self.print_command,
-            'INDEX': self.index_command,
-            'DESTROY': self.destroy_command,
-            'DELETE': self.delete_command,
-            'PROJECT': self.project_command,
-            'SELECT': self.select_command,
-            'JOIN': self.join_command,
-            'QUIT': quit_command,
-            'NO_KEY': no_key
-        }
+        open_shelve(self.db_shelve, key='CATALOG', value=self.catalog_shelve)
+        open_shelve(self.db_shelve, key='RELATION', value=self.relation_shelve)
 
     def print_catalog(self):
-        print('\n#############################################')
+        print('\n')
+        print('#' * 45)
         print('\n{} Database Catalog'.format(self.db.name))
 
         s = shelve.open(self.catalog_shelve, protocol=2, writeback=True)
         for k, v in s.items():
-            print('---------------')
+            print('-' * 15)
             print('\n{}: '.format(k))
             attrs = v.get_attribute()
             df = pd.DataFrame.from_dict(attrs, orient='index')
             print(df)
-        print('---------------')
+        print('-' * 15)
         s.close()
 
     def relation_command(self, args):
         relname = args[0]
-        print('Creating {}'.format(relname))
         self.db.add_relation(relname)
         s = shelve.open(self.relation_shelve, protocol=2, writeback=True)
         for attribute in args[1].split(', '):
             name, dtype, length = attribute.split(' ', 2)
             s[relname].add_attribute(name, dtype, length)
-            # self.db.relation_dict[relname].add_attribute(name, dtype, length)
-        self.db.add_to_catalog(relname, s[relname]) # self.db.relation_dict[relname])
+        self.db.add_to_catalog(relname, s[relname])
         s.close()
 
     def insert_command(self, args):
-        print(args)
         s = shelve.open(self.relation_shelve, protocol=2, writeback=True)
         relation = s[args[0]]
         relation.insert_record(args[1])
@@ -145,8 +73,8 @@ class Surly:
 
     def project_command(self, args, relname, temp):
         s = shelve.open(self.relation_shelve, protocol=2, writeback=True)
-        relation = s[relname] # self.db.find_relation_by_name(args[0])
-        temp_rel = self.db.add_relation(temp)
+        relation = s[relname]
+        # temp_rel = self.db.add_relation(temp)
         attrs = {}
         for attr in args:
             attrs[attr] = []
@@ -184,14 +112,6 @@ class Surly:
             print(ra.get_attribute())
             print(rb.get_attribute())
         s.close()
-        pass
-
-    # def print_command(self, arg):
-    #     if arg == 'CATALOG':
-    #         self.print_catalog()
-    #     else:
-    #         self.db.catalog['RELATION'][arg].print_records()
-
 
     def print_command(self, args):
         print(args)

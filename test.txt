@@ -1,5 +1,0 @@
-RELATION Customer (Id num 4, Fname char 15, Lname char 15, Address char 30, Phone num 10);
-RELATION Pizza (Id num 4, Toppings char 100);
-RELATION Order (Id num 4, Cust_Id num 4, Order_date datetime  10, Pizza_Id num 4, Base_price num 5, Cost num 5);
-RELATION Topping (Id num 4, Topping char 20, Price num 4);
-PRINT CATALOG;

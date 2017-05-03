@@ -1,7 +1,6 @@
 import click
 from click_shell import shell
 from surly import Surly
-import readin
 
 
 # @click.group()
@@ -14,7 +13,7 @@ def cli():
 @click.argument('filepath')
 def read(filepath):
     """Takes a file as an argument"""
-    readin.read_file(filepath)
+    pass
 
 
 sur = Surly()
@@ -75,7 +74,6 @@ def join(relation_a, relation_b, temp, where):
 @cli.command()
 @click.argument('name', nargs=-1)
 def print(name):
-    click.echo('PRINT {}'.format(name))
     sur.print_command(name)
 
 
@@ -83,7 +81,9 @@ def print(name):
 @click.argument('name')
 @click.option('--where', '-w')
 def delete(name, where):
-    # click.echo('delete_command')
+    """Delete all data from a relation without deleting 
+    the relation. If 'WHERE' is used, only deletes tuples
+    that meet specified conditions."""
     sur.delete_command(name, condition=where)
 
 

@@ -6,8 +6,8 @@ class Attribute:
         self.name = name
         self.datatype = datatype
         self.length = length
-        self.attribute = namedtuple('Attribute', ['name', 'type', 'length'])
-        self.attr_values = self.attribute._make([self.name, self.datatype, self.length])
+        # self.attribute = namedtuple('Attribute', ['name', 'type', 'length'])
+        # self.attr_values = self.attribute._make([self.name, self.datatype, self.length])
 
     def __str__(self):
-        return self.name.join(self.datatype).join(self.length)
+        return self.name #.join(self.datatype).join(self.length)

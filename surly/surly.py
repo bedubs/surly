@@ -1,52 +1,11 @@
 import sys
-import time
+import os
+import operator
+import shelve
+from collections import Counter
 import pandas as pd
 from surly.database import Database
-import re
-
-
-def tokenizer(line):
-    line = line.strip(';\n')
-
-    if re.search('^RELATION', line, re.IGNORECASE):
-        command, relname, com_args = line.split(' ', 2)
-        com_args = com_args.strip('()')
-        return command.upper(), (relname, com_args)
-
-    if re.search('^INSERT', line, re.IGNORECASE):
-        command, relname, com_args = line.split(' ', 2)
-        squo = "'"
-        if squo in com_args:
-            arg_list = com_args[0:com_args.find(squo)].split()
-            arg_list.append(com_args[com_args.find(squo) + 1:com_args.rfind(squo)])
-            arg_list.append(com_args[com_args.rfind(squo) + 1:])
-            arg_list = [e.rstrip(' ').lstrip(' ') for e in arg_list]
-            arg_list[:] = [item for item in arg_list if item != '']
-        else:
-            arg_list = com_args.split(' ')
-        return command.upper(), (relname, arg_list)
-
-    if re.search('^INDEX', line, re.IGNORECASE):
-        print(line)
-
-    if re.search('^(DELETE|DESTROY|PRINT)', line, re.IGNORECASE):
-        command, relname = line.split()
-        return command.upper(), relname
-
-    if re.search('^PROJECT', line, re.IGNORECASE):
-        command, args = line.split(' ', 1)
-        attr, relname = args.split(' FROM ', 1)
-        attr = attr.split(', ')
-        return command.upper(), (relname, attr)
-
-    if re.search('^(QUIT|EXIT)', line, re.IGNORECASE):
-        return 'QUIT', 'Exiting system...'
-
-    return 'NO_KEY', 'Unknown command "{}".'.format(line)
-
-
-def no_key(args):
-    print(args)
+from surly.relation import Relation
 
 
 def quit_command(args):
@@ -54,73 +13,157 @@ def quit_command(args):
     sys.exit(0)
 
 
+def open_shelve(file_path, **kwargs):
+    with shelve.open(file_path) as s:
+        s[kwargs['key']] = kwargs['value']
+    s.close()
+
+
+def comparator(a, sign, b):
+    oper = {
+        '>': operator.gt,
+        '<': operator.lt,
+        '>=': operator.ge,
+        '<=': operator.le,
+        '=': operator.eq
+    }
+    return oper[sign](a, b)
+
+
+def indexer(dict, idx):
+    idx_dict = {}
+    for k, v in dict.items():
+        key = v[idx]
+        idx_dict[key] = v
+    return idx_dict
+
+
 class Surly:
-    def __init__(self, name='surly_db_{}'.format(int(time.time()))):
+    def __init__(self, name='surly'):
+        data_path = 'data'
+        self.db_shelve = os.path.join(data_path, name + '.db')
+        self.catalog_shelve = os.path.join(data_path, name + '_catalog.db')
+        self.relation_shelve = os.path.join(data_path, name + '_relation.db')
         self.db = Database(name)
         self.catalog = self.db.catalog['RELATION']
         self.relation_dict = {}
-        self.COMMAND_DICT = {
-            'RELATION': self.relation_command,
-            'INSERT': self.insert_command,
-            'PRINT': self.print_command,
-            'INDEX': self.index_command,
-            'DESTROY': self.destroy_command,
-            'DELETE': self.delete_command,
-            'PROJECT': self.project_command,
-            'QUIT': quit_command,
-            'NO_KEY': no_key
-        }
+        self.temp_relation = {}
+        self.catalog_store = os.path.join(data_path, name + '.db')
+        open_shelve(self.db_shelve, key='CATALOG', value=self.catalog_shelve)
+        open_shelve(self.db_shelve, key='RELATION', value=self.relation_shelve)
 
     def print_catalog(self):
-        print('\n#############################################')
+        print('\n')
+        print('#' * 45)
         print('\n{} Database Catalog'.format(self.db.name))
 
-        for k, v in self.catalog.items():
-            print('---------------')
+        s = shelve.open(self.catalog_shelve, protocol=2, writeback=True)
+        for k, v in s.items():
+            print('-' * 15)
             print('\n{}: '.format(k))
             attrs = v.get_attribute()
             df = pd.DataFrame.from_dict(attrs, orient='index')
             print(df)
-        print('---------------')
+        print('-' * 15)
+        s.close()
 
     def relation_command(self, args):
         relname = args[0]
         self.db.add_relation(relname)
+        s = shelve.open(self.relation_shelve, protocol=2, writeback=True)
         for attribute in args[1].split(', '):
             name, dtype, length = attribute.split(' ', 2)
-            self.db.relation_dict[relname].add_attribute(name, dtype, length)
-        self.db.add_to_catalog(relname, self.db.relation_dict[relname])
+            s[relname].add_attribute(name, dtype, length)
+        self.db.add_to_catalog(relname, s[relname])
+        s.close()
 
     def insert_command(self, args):
-        relation = self.db.relation_dict[args[0]]
+        s = shelve.open(self.relation_shelve, protocol=2, writeback=True)
+        relation = s[args[0]]
         relation.insert_record(args[1])
+        s.close()
 
     def destroy_command(self, relname):
         self.db.destroy_relation(relname)
         self.catalog.pop(relname)
 
-    def delete_command(self, relname):
+    def delete_command(self, relname, condition=''):
+        # TODO add where condition
+        if condition:
+            cond_list = condition.split(' ')
+            temp = {}
+            s = shelve.open(self.relation_shelve, protocol=2, writeback=True)
+            recs = s[relname].records
+            to_pop = []
+            for k, v in recs.items():
+                if comparator(v[cond_list[0]], cond_list[1], cond_list[2]):
+                    to_pop.append(k)
+                    # temp[k] = recs.pop(k)
+                    continue
+            t = [recs.pop(k) for k in to_pop ]
+            print(t)
+            s.sync()
+            s.close()
+            return
         self.db.delete_relation(relname)
 
-    def project_command(self, args):
-        relation = self.db.find_relation_by_name(args[0])
-        tempRel = self.db.add_relation('temp_rel')
+    def project_command(self, args, relname):
+        s = shelve.open(self.relation_shelve, protocol=2, writeback=True)
+        relation = s[relname]
         attrs = {}
-        for attr in args[1]:
+        for attr in args:
             attrs[attr] = []
             for k, v in relation.records.items():
                 attrs[attr].append(v[attr])
+        s.close()
 
-        df = pd.DataFrame(attrs, columns=args[1])
-        print('\n\n{0}: {1}\n'.format(args[0], args[1]))
+        df = pd.DataFrame(attrs, columns=args)
+        print('\n\n{0}: {1}\n'.format(relname, args))
         print(df)
 
+    def select_command(self, relname, condition=''):
+        cond_list = condition.split(' ')
+        temp = {}
+        s = shelve.open(self.relation_shelve, protocol=2, writeback=True)
+        recs = s[relname].records
+        for k, v in recs.items():
+            if comparator(v[cond_list[0]], cond_list[1], cond_list[2]):
+                temp[k] = v
+                continue
+        s.close()
+        return temp
 
-    def print_command(self, arg):
-        if arg == 'CATALOG':
+    def join_command(self, rel_a, rel_b, condition=''):
+        col = condition[0] + '_' + condition[1]
+        s = shelve.open(self.relation_shelve, protocol=2, writeback=True)
+        ra = s[rel_a]
+        rb = s[rel_b]
+        s.close()
+        a_recs = ra.records
+        b_recs = rb.records
+        dict_a = indexer(a_recs, condition[0])
+        dict_b = indexer(b_recs, condition[1])
+        join_dict = {}
+
+        for k, v in dict_a.items():
+            del v[condition[0]]
+            del dict_b[k][condition[1]]
+            v[col] = k
+            dict_b[col] = k
+            join_dict[k] = {**v, **dict_b[k]}
+
+        return indexer(join_dict, col)
+
+    def print_command(self, name):
+        if name == 'CATALOG':
             self.print_catalog()
         else:
-            self.db.catalog['RELATION'][arg].print_records()
+            try:
+                s = shelve.open(self.relation_shelve, protocol=2, writeback=True)
+                s[name].print_records()
+                s.close()
+            except KeyError:
+                print('{} is not a known relation'.format(name))
 
     @staticmethod
     def index_command(command_string):

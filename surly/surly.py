@@ -1,5 +1,6 @@
 import sys
 import os
+import operator
 import shelve
 import pandas as pd
 from surly.database import Database
@@ -15,6 +16,28 @@ def open_shelve(file_path, **kwargs):
     with shelve.open(file_path) as s:
         s[kwargs['key']] = kwargs['value']
     s.close()
+
+# def open_shelve(func):
+#     def shelver(file_path, **kwargs):
+#         with shelve.open(file_path) as s:
+#             s[kwargs['key']] = kwargs['value']
+#         s.close()
+#     return shelver
+#
+# @open_shelve
+# def store(file_path, **kwargs):
+#     pass
+
+
+def comparator(a, sign, b):
+    oper = {
+        '>': operator.gt,
+        '<': operator.lt,
+        '>=': operator.ge,
+        '<=': operator.le,
+        '=': operator.eq
+    }
+    return oper[sign](a, b)
 
 
 class Surly:
@@ -66,10 +89,25 @@ class Surly:
         self.db.destroy_relation(relname)
         self.catalog.pop(relname)
 
-    def delete_command(self, relname, condition=None):
+    def delete_command(self, relname, condition=''):
         # TODO add where condition
-        if condition is None:
-            self.db.delete_relation(relname)
+        if condition:
+            cond_list = condition.split(' ')
+            temp = {}
+            s = shelve.open(self.relation_shelve, protocol=2, writeback=True)
+            recs = s[relname].records
+            to_pop = []
+            for k, v in recs.items():
+                if comparator(v[cond_list[0]], cond_list[1], cond_list[2]):
+                    to_pop.append(k)
+                    # temp[k] = recs.pop(k)
+                    continue
+            t = [recs.pop(k) for k in to_pop ]
+            print(t)
+            s.sync()
+            s.close()
+            return
+        self.db.delete_relation(relname)
 
     def project_command(self, args, relname, temp):
         s = shelve.open(self.relation_shelve, protocol=2, writeback=True)
@@ -86,22 +124,33 @@ class Surly:
         print('\n\n{0}: {1}\n'.format(relname, args))
         print(df)
 
-    def select_command(self, relname, args):
+    def select_command(self, relname, condition=''):
         # TODO implement select command
-        print(args)
-        temp_rel = Relation(args.pop())
-        relation = self.db.find_relation_by_name(args.pop(0))
-        conditions = args.pop()
-        self.temp_relation[temp_rel.name] = temp_rel
-        for k, w in relation.records.items():
-            if w[conditions[0]] == conditions[1]:
-                self.temp_relation[temp_rel.name] = {k: w}
-                print('{}: {}'.format(k, w))
-        print(relation)
+        cond_list = condition.split(' ')
+        temp = {}
+        s = shelve.open(self.relation_shelve, protocol=2, writeback=True)
+        recs = s[relname].records
+        for k, v in recs.items():
+            if comparator(v[cond_list[0]], cond_list[1], cond_list[2]):
+                temp[k] = v
+                continue
+        s.close()
+        return temp
 
-    def join_command(self, rel_a, rel_b, args, temp='temp'):
+        # temp_rel = Relation(args.pop())
+        # relation = self.db.find_relation_by_name(args.pop(0))
+        # conditions = args.pop()
+        # self.temp_relation[temp_rel.name] = temp_rel
+        # for k, w in relation.records.items():
+        #     if w[conditions[0]] == conditions[1]:
+        #         self.temp_relation[temp_rel.name] = {k: w}
+        #         print('{}: {}'.format(k, w))
+        # print(relation)
+
+    def join_command(self, rel_a, rel_b, args, temp='', condition=''):
         # TODO implement join command
-        self.db.add_relation(temp)
+        if temp:
+            self.db.add_relation(temp)
         s = shelve.open(self.relation_shelve, protocol=2, writeback=True)
         ra = s[rel_a]
         rb = s[rel_b]

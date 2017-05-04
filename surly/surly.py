@@ -2,6 +2,7 @@ import sys
 import os
 import operator
 import shelve
+from collections import Counter
 import pandas as pd
 from surly.database import Database
 from surly.relation import Relation
@@ -17,17 +18,6 @@ def open_shelve(file_path, **kwargs):
         s[kwargs['key']] = kwargs['value']
     s.close()
 
-# def open_shelve(func):
-#     def shelver(file_path, **kwargs):
-#         with shelve.open(file_path) as s:
-#             s[kwargs['key']] = kwargs['value']
-#         s.close()
-#     return shelver
-#
-# @open_shelve
-# def store(file_path, **kwargs):
-#     pass
-
 
 def comparator(a, sign, b):
     oper = {
@@ -40,8 +30,16 @@ def comparator(a, sign, b):
     return oper[sign](a, b)
 
 
+def indexer(dict, idx):
+    idx_dict = {}
+    for k, v in dict.items():
+        key = v[idx]
+        idx_dict[key] = v
+    return idx_dict
+
+
 class Surly:
-    def __init__(self, name='surly_db'):
+    def __init__(self, name='surly'):
         data_path = 'data'
         self.db_shelve = os.path.join(data_path, name + '.db')
         self.catalog_shelve = os.path.join(data_path, name + '_catalog.db')
@@ -109,10 +107,9 @@ class Surly:
             return
         self.db.delete_relation(relname)
 
-    def project_command(self, args, relname, temp):
+    def project_command(self, args, relname):
         s = shelve.open(self.relation_shelve, protocol=2, writeback=True)
         relation = s[relname]
-        # temp_rel = self.db.add_relation(temp)
         attrs = {}
         for attr in args:
             attrs[attr] = []
@@ -125,7 +122,6 @@ class Surly:
         print(df)
 
     def select_command(self, relname, condition=''):
-        # TODO implement select command
         cond_list = condition.split(' ')
         temp = {}
         s = shelve.open(self.relation_shelve, protocol=2, writeback=True)
@@ -137,40 +133,37 @@ class Surly:
         s.close()
         return temp
 
-        # temp_rel = Relation(args.pop())
-        # relation = self.db.find_relation_by_name(args.pop(0))
-        # conditions = args.pop()
-        # self.temp_relation[temp_rel.name] = temp_rel
-        # for k, w in relation.records.items():
-        #     if w[conditions[0]] == conditions[1]:
-        #         self.temp_relation[temp_rel.name] = {k: w}
-        #         print('{}: {}'.format(k, w))
-        # print(relation)
-
-    def join_command(self, rel_a, rel_b, args, temp='', condition=''):
-        # TODO implement join command
-        if temp:
-            self.db.add_relation(temp)
+    def join_command(self, rel_a, rel_b, condition=''):
+        col = condition[0] + '_' + condition[1]
         s = shelve.open(self.relation_shelve, protocol=2, writeback=True)
         ra = s[rel_a]
         rb = s[rel_b]
-
-        if args:
-            args_list = args.split(' = ')
-            print(args_list)
-            print(ra.get_attribute())
-            print(rb.get_attribute())
         s.close()
+        a_recs = ra.records
+        b_recs = rb.records
+        dict_a = indexer(a_recs, condition[0])
+        dict_b = indexer(b_recs, condition[1])
+        join_dict = {}
 
-    def print_command(self, args):
-        print(args)
-        for arg in args:
-            if arg == 'CATALOG':
-                self.print_catalog()
-            else:
+        for k, v in dict_a.items():
+            del v[condition[0]]
+            del dict_b[k][condition[1]]
+            v[col] = k
+            dict_b[col] = k
+            join_dict[k] = {**v, **dict_b[k]}
+
+        return indexer(join_dict, col)
+
+    def print_command(self, name):
+        if name == 'CATALOG':
+            self.print_catalog()
+        else:
+            try:
                 s = shelve.open(self.relation_shelve, protocol=2, writeback=True)
-                s[arg].print_records()
+                s[name].print_records()
                 s.close()
+            except KeyError:
+                print('{} is not a known relation'.format(name))
 
     @staticmethod
     def index_command(command_string):

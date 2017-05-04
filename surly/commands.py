@@ -1,6 +1,7 @@
 import click
 from click_shell import shell
 from surly import Surly
+from surly.relation import Relation
 
 
 # @click.group()
@@ -12,11 +13,15 @@ def cli():
 @cli.command()
 @click.argument('filepath')
 def read(filepath):
-    """Takes a file as an argument"""
+    """
+    \b
+    This command does nothing at the moment
+    """
     pass
 
 
 sur = Surly()
+temp_relations = {}
 
 
 @cli.command()
@@ -57,14 +62,11 @@ def select(relation_name, where, temp):
     """
 
     if temp:
-        rel_dict = {temp: sur.select_command(relation_name, condition=where), }
-        click.echo(rel_dict)
+        temp_relations[temp] = Relation(temp)
+        temp_relations[temp].records = sur.select_command(relation_name, condition=where)
+        click.echo(temp_relations)
         return
     click.echo(sur.select_command(relation_name, condition=where))
-    # click.echo('Relation: {}'.format(relation_name))
-    # if where:
-    #     click.echo('WHERE: {}'.format(where))
-    # click.echo('select_command')
 
 
 @cli.command()
@@ -73,34 +75,43 @@ def select(relation_name, where, temp):
 @click.argument('attributes', nargs=-1)
 def project(f, temp, attributes):
     """Project from a Relation"""
-    sur.project_command(attributes, relname=f, temp=temp)
+    sur.project_command(attributes, relname=f)
 
 
 @cli.command()
 @click.argument('rel1', nargs=1)
 @click.argument('rel2', nargs=1)
-@click.option('--temp', '-t', help='FROM=Name of temp relation.', nargs=1)
-@click.option('--where', '-w', default='', help='WHERE=select condition.', nargs=1)
-def join(rel1, rel2, temp, where):
+@click.option('--temp', default='', help='FROM=Name of temp relation.', nargs=1)
+@click.option('--where', '-w', default='', help='WHERE=select condition.', nargs=2)
+def join(rel1, rel2, where, temp):
     """
     
     Join two relations based on condition
     
     """
-    sur.join_command(rel1, rel2, temp=temp, condition=where)
-    click.echo('join_command')
+    if temp:
+        temp_relations[temp] = Relation(temp)
+        temp_relations[temp].records = sur.join_command(rel1, rel2, condition=where)
+        click.echo(temp_relations)
+        return
+    click.echo(sur.join_command(rel1, rel2, condition=where))
+    # click.echo('join_command')
 
 
 @cli.command()
-@click.argument('name', nargs=-1)
-def print(name):
+@click.argument('relation_name', nargs=-1)
+def print(relation_name):
     """
     
     Print a relation by name or use
     'print CATALOG' to view DB info
     
     """
-    sur.print_command(name)
+    for name in relation_name:
+        if name in temp_relations.keys():
+            temp_relations[name].print_records()
+        else:
+            sur.print_command(name)
 
 
 @cli.command()

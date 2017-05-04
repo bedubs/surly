@@ -1,0 +1,214 @@
+Starting SURLY...
+surly >_ 
+
+#############################################
+
+surly Database Catalog
+---------------
+
+Customer: 
+         0
+0       Id
+1    Fname
+2    Lname
+3  Address
+4    Phone
+---------------
+
+Pizza: 
+          0
+0        Id
+1  Toppings
+---------------
+
+Order: 
+            0
+0          Id
+1     Cust_Id
+2  Order_date
+3    Pizza_Id
+4  Base_price
+5        Cost
+---------------
+
+Topping: 
+         0
+0       Id
+1  Topping
+2    Price
+---------------
+surly >_ 
+Relation: Customer
+        Id     Fname    Lname                  Address       Phone
+1000  1000      John    Smith  731 Fondren, Houston TX  9857651234
+1001  1001  Franklin     Wong     638 Voss, Houston TX  9855552234
+1002  1002    Alicia   Zelaya   3321 Castle, Spring TX  5045559876
+1003  1003  Jennifer  Wallace   291 Berry, Bellaire TX  5048675309
+1004  1004    Ramesh  Narayan  975 Fire Oak, Humble TX  2555558764
+1005  1005     Joyce  English    5631 Rice, Houston TX  9855556734
+
+Relation: Pizza
+        Id                              Toppings
+3000  3000                      Pepperoni,Cheese
+3001  3001                   Pineapple,Mushrooms
+3002  3002                             Anchovies
+3003  3003                        Cheese,Sausage
+3004  3004                                Cheese
+3005  3005                   Pepperoni,Mushrooms
+3006  3006  Pineapple,Pepperoni,Anchovies,Cheese
+
+Relation: Order
+        Id Cust_Id  Order_date Pizza_Id Base_price
+4001  4001    1002  2014-12-21     3000      13.00
+4002  4002    1005  2015-01-07     3001      14.75
+4003  4003    1003  2015-02-26     3002      10.75
+4004  4004    1004  2015-03-24     3003      13.00
+4005  4005    1000  2015-09-13     3004      11.00
+4006  4006    1001  2016-10-01     3005      13.50
+4007  4007    1005  2017-01-29     3006      17.00
+
+Relation: Topping
+        Id    Topping Price
+2000  2000     Cheese  1.00
+2001  2001  Pepperoni  2.00
+2002  2002    Sausage  2.00
+2003  2003  Mushrooms  1.50
+2004  2004  Pineapple  3.25
+2005  2005  Anchovies  0.75
+surly >_ Usage: insert [OPTIONS] RELATION_NAME [ATTRIBUTE_DEFINITIONS]...
+
+  Insert Values into a Relation
+
+Options:
+  --help  Show this message and exit.
+surly >_ insert_command
+surly >_ 
+Relation: Topping
+        Id    Topping Price
+2000  2000     Cheese  1.00
+2001  2001  Pepperoni  2.00
+2002  2002    Sausage  2.00
+2003  2003  Mushrooms  1.50
+2004  2004  Pineapple  3.25
+2005  2005  Anchovies  0.75
+2006  2006     Olives  0.90
+surly >_ sel is not a known relation
+surly >_ Usage: select [OPTIONS] RELATION_NAME
+
+  Select Tuples from a Relation based on a specified condition.
+
+Options:
+  -w, --where TEXT  WHERE=select condition.
+  --temp TEXT       Temporary relation to represent selected values.
+  --help            Show this message and exit.
+surly >_Starting SURLY...
+surly >_ {'wallace': <surly.relation.Relation object at 0x7f834e468e10>}
+surly >_ 
+Relation: wallace
+        Id     Fname    Lname                 Address       Phone
+1003  1003  Jennifer  Wallace  291 Berry, Bellaire TX  5048675309
+surly >_ 
+
+Customer: ('Lname', 'Address')
+
+     Lname                  Address
+0    Smith  731 Fondren, Houston TX
+1     Wong     638 Voss, Houston TX
+2   Zelaya   3321 Castle, Spring TX
+3  Wallace   291 Berry, Bellaire TX
+4  Narayan  975 Fire Oak, Humble TX
+5  English    5631 Rice, Houston TX
+surly >_ surly >_ {'1000': {'Fname': 'John', 'Lname': 'Smith', 'Address': '731 Fondren, Houston TX', 'Phone': '9857651234', 'Id_Cust_Id': '1000', 'Id': '4005', 'Order_date': '2015-09-13', 'Pizza_Id': '3004', 'Base_price': '11.00'}, '1001': {'Fname': 'Franklin', 'Lname': 'Wong', 'Address': '638 Voss, Houston TX', 'Phone': '9855552234', 'Id_Cust_Id': '1001', 'Id': '4006', 'Order_date': '2016-10-01', 'Pizza_Id': '3005', 'Base_price': '13.50'}, '1002': {'Fname': 'Alicia', 'Lname': 'Zelaya', 'Address': '3321 Castle, Spring TX', 'Phone': '5045559876', 'Id_Cust_Id': '1002', 'Id': '4001', 'Order_date': '2014-12-21', 'Pizza_Id': '3000', 'Base_price': '13.00'}, '1003': {'Fname': 'Jennifer', 'Lname': 'Wallace', 'Address': '291 Berry, Bellaire TX', 'Phone': '5048675309', 'Id_Cust_Id': '1003', 'Id': '4003', 'Order_date': '2015-02-26', 'Pizza_Id': '3002', 'Base_price': '10.75'}, '1004': {'Fname': 'Ramesh', 'Lname': 'Narayan', 'Address': '975 Fire Oak, Humble TX', 'Phone': '2555558764', 'Id_Cust_Id': '1004', 'Id': '4004', 'Order_date': '2015-03-24', 'Pizza_Id': '3003', 'Base_price': '13.00'}, '1005': {'Fname': 'Joyce', 'Lname': 'English', 'Address': '5631 Rice, Houston TX', 'Phone': '9855556734', 'Id_Cust_Id': '1005', 'Id': '4007', 'Order_date': '2017-01-29', 'Pizza_Id': '3006', 'Base_price': '17.00'}}
+surly >_ {'wallace': <surly.relation.Relation object at 0x7f834e468e10>, 'custord': <surly.relation.Relation object at 0x7f834e468f28>}
+surly >_ 
+Relation: custord
+         Fname    Lname                  Address       Phone Id_Cust_Id    Id  \
+1000      John    Smith  731 Fondren, Houston TX  9857651234       1000  4005   
+1001  Franklin     Wong     638 Voss, Houston TX  9855552234       1001  4006   
+1002    Alicia   Zelaya   3321 Castle, Spring TX  5045559876       1002  4001   
+1003  Jennifer  Wallace   291 Berry, Bellaire TX  5048675309       1003  4003   
+1004    Ramesh  Narayan  975 Fire Oak, Humble TX  2555558764       1004  4004   
+1005     Joyce  English    5631 Rice, Houston TX  9855556734       1005  4007   
+
+      Order_date Pizza_Id Base_price  
+1000  2015-09-13     3004      11.00  
+1001  2016-10-01     3005      13.50  
+1002  2014-12-21     3000      13.00  
+1003  2015-02-26     3002      10.75  
+1004  2015-03-24     3003      13.00  
+1005  2017-01-29     3006      17.00  
+surly >_ Usage: relation [OPTIONS] RELATION_NAME ATTRIBUTE_DEFINITIONS
+
+  Create a Relation
+
+Options:
+  --help  Show this message and exit.
+surly >_ surly >_ 
+
+#############################################
+
+surly Database Catalog
+---------------
+
+Customer: 
+         0
+0       Id
+1    Fname
+2    Lname
+3  Address
+4    Phone
+---------------
+
+Pizza: 
+          0
+0        Id
+1  Toppings
+---------------
+
+Order: 
+            0
+0          Id
+1     Cust_Id
+2  Order_date
+3    Pizza_Id
+4  Base_price
+5        Cost
+---------------
+
+Topping: 
+         0
+0       Id
+1  Topping
+2    Price
+---------------
+
+Table: 
+          0
+0        Id
+1  Material
+2     Seats
+---------------
+surly >_ insert_command
+surly >_ insert_command
+surly >_ 
+Relation: Table
+        Id Material Seats
+1234  1234     Wood     4
+surly >_ insert_command
+surly >_ insert_command
+surly >_ 
+Relation: Table
+        Id Material Seats
+1234  1234     Wood     4
+1235  1235  Plastic     2
+1236  1236    Metal     3
+surly >_ surly >_ surly >_ surly >_ surly >_ Table is not a known relation
+Relation: Topping
+        Id    Topping Price
+2000  2000     Cheese  1.00
+2001  2001  Pepperoni  2.00
+2002  2002    Sausage  2.00
+2003  2003  Mushrooms  1.50
+2004  2004  Pineapple  3.25
+2005  2005  Anchovies  0.75
+surly >_ 

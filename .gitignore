@@ -2,12 +2,5 @@
 __pycache__
 stuff/
 
-data/surly_db.db.bak
-data/surly_db.db.dat
-data/surly_db.db.dir
-data/surly_db_catalog.db.bak
-data/surly_db_catalog.db.dat
-data/surly_db_catalog.db.dir
-data/surly_db_relation.db.bak
-data/surly_db_relation.db.dat
-data/surly_db_relation.db.dir
+data/*.db
+data/*.db.*
